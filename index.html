@@ -1,0 +1,464 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kat OS · Tu PC, con gato</title>
+<meta name="description" content="Kat OS Desktop: un sistema operativo bonito, seguro y fácil, con Kat, tu asistente en forma de canica. Basado en Debian 13 y KDE Plasma 6. Versión alpha.">
+<meta property="og:title" content="Kat OS · Tu PC, con gato">
+<meta property="og:description" content="Un sistema operativo bonito, seguro y fácil, con Kat, tu asistente. Versión alpha.">
+<meta property="og:image" content="assets/logo.png">
+<meta name="theme-color" content="#0c0e11">
+<link rel="icon" type="image/png" href="assets/favicon.png">
+<style>
+/* Kat OS · web 1.0 — mismo lenguaje visual que la web de KatLauncher (Kat Studios):
+   oscuro sobrio, un acento, sin brillos. */
+:root {
+  --bg: #0c0e11; --rail: #111418; --raise: #14181d; --line: #1e232a; --line-2: #2a3039; --hover: #171b21;
+  --text: #e9ebee; --muted: #8a919b; --faint: #59606a;
+  --accent: #7048ff; --accent-2: #a855f7; --on-accent: #ffffff;
+  --sans: "Segoe UI Variable Display", "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  --mono: "Cascadia Mono", "SF Mono", Consolas, ui-monospace, monospace;
+  --ease: cubic-bezier(.2, .8, .2, 1);
+  --wrap: 1180px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; scroll-padding-top: 76px; }
+body { background: var(--bg); color: var(--text); font: 16px/1.55 var(--sans); -webkit-font-smoothing: antialiased; }
+img { display: block; max-width: 100%; }
+a { color: inherit; text-decoration: none; }
+button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+::selection { background: var(--accent); color: var(--on-accent); }
+.wrap { width: min(var(--wrap), 100% - 40px); margin-inline: auto; }
+.mono { font-family: var(--mono); }
+.muted { color: var(--muted); }
+.skip { position: absolute; left: -999px; top: 8px; background: var(--accent); color: var(--on-accent); padding: 8px 12px; border-radius: 6px; z-index: 99; }
+.skip:focus { left: 8px; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+
+/* Botones */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; height: 42px; padding: 0 18px;
+  border-radius: 8px; border: 1px solid var(--line-2); background: var(--raise); font-weight: 600; font-size: 15px; white-space: nowrap;
+  transition: border-color .15s var(--ease), background .15s var(--ease), transform .15s var(--ease); }
+.btn:hover { border-color: #3a414c; background: var(--hover); }
+.btn:active { transform: translateY(1px); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.btn.primary:hover { background: #7d59ff; border-color: #7d59ff; }
+.btn.big { height: 52px; padding: 0 24px; font-size: 16px; }
+.btn.small { height: 34px; padding: 0 14px; font-size: 14px; }
+.btn[aria-disabled="true"] { cursor: default; }
+.link { color: var(--accent-2); font-weight: 600; }
+.link:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+/* Barra superior */
+.top { position: sticky; top: 0; z-index: 20; background: rgba(12, 14, 17, .86); backdrop-filter: blur(10px);
+  border-bottom: 1px solid transparent; transition: border-color .2s var(--ease); }
+.top.scrolled { border-bottom-color: var(--line); }
+.top-row { display: flex; align-items: center; gap: 24px; height: 64px; }
+.brand { display: flex; align-items: center; gap: 10px; font-weight: 700; letter-spacing: -.01em; }
+.brand img { width: 32px; height: 32px; border-radius: 8px; }
+.ver { font-size: 11px; color: var(--faint); font-weight: 400; padding: 2px 6px; border: 1px solid var(--line); border-radius: 4px; }
+.nav { display: flex; gap: 4px; margin-left: 12px; }
+.nav a { padding: 8px 12px; border-radius: 6px; color: var(--muted); font-size: 14px; font-weight: 500; transition: color .15s, background .15s; }
+.nav a:hover { color: var(--text); background: var(--hover); }
+.top-actions { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+
+/* Portada */
+.hero { display: grid; grid-template-columns: 1fr 1.05fr; gap: 56px; align-items: center; padding: 72px 0 96px; min-height: calc(100vh - 64px); }
+.eyebrow { font: 12px var(--mono); text-transform: uppercase; letter-spacing: .1em; color: var(--faint); display: flex; align-items: center; gap: 10px; }
+.eyebrow .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+.display { font-size: clamp(42px, 6.4vw, 78px); line-height: 1.02; letter-spacing: -.035em; font-weight: 750; margin: 18px 0 22px; }
+.lead { font-size: 18px; color: var(--muted); max-width: 52ch; }
+.cta { display: flex; flex-wrap: wrap; gap: 12px; margin: 34px 0 26px; }
+.facts { list-style: none; display: flex; flex-wrap: wrap; gap: 8px 22px; font-size: 12px; color: var(--faint); }
+.facts li::before { content: "/ "; color: var(--line-2); }
+
+/* Ilustración del escritorio de Kat OS */
+.mock { border: 1px solid var(--line); border-radius: 12px; background: var(--rail); overflow: hidden; box-shadow: 0 30px 80px rgba(0, 0, 0, .45); }
+.mock-bar { display: flex; align-items: center; gap: 6px; height: 34px; padding: 0 12px; border-bottom: 1px solid var(--line); }
+.mock-bar i { width: 10px; height: 10px; border-radius: 50%; background: var(--line-2); }
+.mock-bar span { margin-left: 8px; font-size: 11px; color: var(--faint); }
+.mock-desk { position: relative; height: 380px; background:
+  repeating-linear-gradient(90deg, rgba(255,255,255,.03) 0 1px, transparent 1px 22px),
+  repeating-linear-gradient(0deg, rgba(255,255,255,.03) 0 1px, transparent 1px 22px), #13161b; font-size: 12px; }
+.win { position: absolute; left: 7%; top: 9%; width: 58%; border: 1px solid var(--line-2); border-radius: 8px; background: var(--bg); overflow: hidden; }
+.win-bar { height: 26px; display: flex; align-items: center; gap: 8px; padding: 0 10px; border-bottom: 1px solid var(--line); color: var(--faint); font-size: 10px; }
+.win-bar img { width: 14px; height: 14px; }
+.win-body { padding: 10px; display: grid; gap: 6px; }
+.search { height: 24px; border: 1px solid var(--line-2); border-radius: 6px; padding: 0 8px; display: flex; align-items: center; color: var(--muted); font-size: 11px; }
+.row { display: grid; grid-template-columns: 30px 1fr auto; gap: 8px; align-items: center; padding: 6px; border-radius: 6px; }
+.row.on { background: var(--hover); box-shadow: inset 2px 0 0 var(--accent-2); }
+.row img, .row b { width: 30px; height: 30px; border-radius: 7px; }
+.row b { background: #1b2027; display: grid; place-items: center; font: 600 11px var(--mono); color: var(--muted); }
+.row strong { display: block; font-weight: 600; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.row small { color: var(--faint); font-size: 10px; }
+.row .pill { font-size: 10px; padding: 3px 8px; border-radius: 5px; background: var(--accent); color: var(--on-accent); font-weight: 700; }
+.row .pill.off { background: #1b2027; color: var(--muted); }
+.orb { position: absolute; right: 6%; bottom: 58px; width: 118px; }
+.orb-bubble { position: absolute; right: 30%; bottom: 182px; max-width: 190px; padding: 8px 10px; border: 1px solid var(--line-2); border-radius: 8px; background: var(--bg); color: var(--muted); font-size: 11px; }
+.taskbar { position: absolute; left: 0; right: 0; bottom: 0; height: 44px; border-top: 1px solid var(--line); background: var(--rail);
+  display: flex; align-items: center; gap: 8px; padding: 0 12px; }
+.taskbar img { width: 26px; height: 26px; border-radius: 6px; }
+.taskbar .start { width: 26px; height: 26px; border-radius: 6px; background: var(--accent); display: grid; place-items: center; }
+.taskbar .start img { width: 18px; height: 18px; }
+.taskbar .clock { margin-left: auto; font: 11px var(--mono); color: var(--faint); }
+.mock figcaption { padding: 8px 12px; border-top: 1px solid var(--line); font-size: 10px; color: var(--faint); }
+
+/* Secciones */
+.section { padding: 96px 0; border-top: 1px solid var(--line); }
+.sec-head { max-width: 720px; margin-bottom: 40px; }
+.sec-head h2, .media h2, .support h2 { font-size: clamp(28px, 3.6vw, 42px); line-height: 1.1; letter-spacing: -.025em; font-weight: 750; margin: 12px 0 12px; }
+.grid { display: grid; gap: 14px; }
+.grid.three { grid-template-columns: repeat(3, 1fr); }
+.grid.four { grid-template-columns: repeat(4, 1fr); }
+.card, .feat, .ui, .dl { background: var(--rail); border: 1px solid var(--line); border-radius: 10px; padding: 22px;
+  transition: border-color .2s var(--ease), transform .25s var(--ease); }
+.card:hover, .feat:hover, .ui:hover, .dl:hover { border-color: var(--line-2); transform: translateY(-2px); }
+.card .num { font-size: 12px; color: var(--accent-2); margin-bottom: 18px; }
+.card h3, .feat h3, .ui h3, .dl h3 { font-size: 17px; font-weight: 650; letter-spacing: -.01em; margin-bottom: 8px; }
+.card p, .feat p, .ui p, .dl p { color: var(--muted); font-size: 14.5px; }
+.feat { padding: 20px; }
+.feat .ico { width: 36px; height: 36px; border-radius: 8px; margin-bottom: 14px; }
+.feat h3::before { content: ""; display: block; width: 18px; height: 3px; border-radius: 2px; background: var(--accent); margin-bottom: 14px; }
+.feat.con-icono h3::before { display: none; }
+
+/* Estilos de escritorio (mini ilustraciones) */
+.ui h3 { display: flex; align-items: center; gap: 8px; margin-top: 14px; }
+.tag { font-size: 10px; text-transform: uppercase; letter-spacing: .08em; padding: 2px 6px; border-radius: 4px; background: var(--accent); color: var(--on-accent); font-weight: 600; }
+.mini { position: relative; height: 110px; border-radius: 8px; background: var(--bg); border: 1px solid var(--line); overflow: hidden; }
+.mini i { position: absolute; display: block; border-radius: 3px; background: #1d222a; }
+.mini i.a { background: var(--accent); }
+.m-win .bar { left: 0; right: 0; bottom: 0; height: 16px; border-radius: 0; background: #111418; }
+.m-win .s { left: 4%; bottom: 4px; width: 8px; height: 8px; }
+.m-win .w { left: 14%; top: 14%; width: 52%; height: 50%; }
+.m-mac .menu { left: 0; right: 0; top: 0; height: 9px; border-radius: 0; background: #111418; }
+.m-mac .dock { left: 30%; width: 40%; bottom: 8px; height: 14px; border-radius: 5px; background: #161a20; }
+.m-mac .w { left: 22%; top: 22%; width: 56%; height: 48%; }
+.m-lin .side { left: 0; top: 0; bottom: 0; width: 14%; border-radius: 0; background: #111418; }
+.m-lin .s { left: 4%; top: 6px; width: 7%; height: 9px; }
+.m-lin .w { left: 26%; top: 16%; width: 58%; height: 56%; }
+.m-lin .i { left: 4%; width: 7%; height: 7px; }
+
+/* Kat */
+.media { display: grid; grid-template-columns: .8fr 1.2fr; gap: 48px; align-items: center; }
+.kat-box { border: 1px solid var(--line); border-radius: 12px; background: var(--rail); padding: 28px; display: grid; place-items: center; gap: 18px; }
+.kat-box img.grande { width: min(300px, 70vw); }
+.disenos { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+.disenos button { width: 46px; height: 46px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); padding: 4px;
+  transition: border-color .15s var(--ease); }
+.disenos button:hover { border-color: var(--line-2); }
+.disenos button[aria-pressed="true"] { border-color: var(--accent); }
+.puntos { list-style: none; display: grid; gap: 14px; margin-top: 22px; }
+.puntos li { padding-left: 22px; position: relative; color: var(--muted); font-size: 15px; }
+.puntos li::before { content: ""; position: absolute; left: 0; top: 9px; width: 10px; height: 3px; border-radius: 2px; background: var(--accent); }
+.puntos b { color: var(--text); font-weight: 650; }
+
+/* Descargas */
+.dl { display: flex; flex-direction: column; gap: 10px; }
+.dl .eyebrow { margin-bottom: 4px; }
+.dl p { flex: 1; }
+.dl .btn { align-self: flex-start; margin-top: 6px; }
+.dl.main { border-color: color-mix(in srgb, var(--accent) 55%, var(--line)); }
+.dl ul { list-style: none; color: var(--muted); font-size: 14px; display: grid; gap: 4px; }
+.dl ul li::before { content: "/ "; color: var(--line-2); }
+.note { margin-top: 22px; color: var(--faint); font-size: 13px; }
+
+/* KatLauncher */
+.support { display: flex; justify-content: space-between; align-items: center; gap: 32px; padding: 36px; border: 1px solid var(--line); border-radius: 12px; background: var(--rail); }
+.support .quien { display: flex; gap: 20px; align-items: center; }
+.support .quien img { width: 64px; height: 64px; border-radius: 12px; flex: none; }
+.support p { max-width: 56ch; }
+.support-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+/* Pie */
+.foot { border-top: 1px solid var(--line); padding: 32px 0 40px; }
+.foot-row { display: grid; grid-template-columns: auto 1fr; gap: 14px 32px; align-items: center; }
+.foot .brand img { width: 24px; height: 24px; border-radius: 6px; }
+.foot-links { display: flex; gap: 20px; justify-content: flex-end; font-size: 14px; color: var(--muted); flex-wrap: wrap; }
+.foot-links a:hover { color: var(--text); }
+.fine { grid-column: 1 / -1; font-size: 12px; color: var(--faint); }
+
+/* Aparecer al bajar */
+.reveal { opacity: 0; transform: translateY(14px); transition: opacity .5s var(--ease), transform .5s var(--ease); }
+.reveal.in { opacity: 1; transform: none; }
+
+@media (max-width: 980px) {
+  .nav { display: none; }
+  .hero { grid-template-columns: 1fr; min-height: auto; padding: 48px 0 72px; gap: 40px; }
+  .grid.four { grid-template-columns: repeat(2, 1fr); }
+  .grid.three { grid-template-columns: 1fr; }
+  .media { grid-template-columns: 1fr; }
+  .support { flex-direction: column; align-items: flex-start; }
+}
+@media (max-width: 560px) {
+  .grid.four { grid-template-columns: 1fr; }
+  .top-actions .btn:not(.primary) { display: none; }
+  .mock-desk { height: 330px; }
+  .win { width: 78%; }
+  .orb { width: 86px; bottom: 52px; }
+  .orb-bubble { display: none; }
+  .section { padding: 64px 0; }
+  .foot-row { grid-template-columns: 1fr; }
+  .foot-links { justify-content: flex-start; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .reveal { opacity: 1; transform: none; transition: none; }
+  * { transition: none !important; }
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Saltar al contenido</a>
+
+<header class="top" id="top">
+  <div class="wrap top-row">
+    <a class="brand" href="#inicio"><img src="assets/logo.png" alt="">Kat OS <span class="ver">1.0 alpha</span></a>
+    <nav class="nav" aria-label="Secciones">
+      <a href="#novedades">Novedades</a>
+      <a href="#kat">Kat</a>
+      <a href="#funciones">Funciones</a>
+      <a href="#estilos">Estilos</a>
+      <a href="#descargar">Descargar</a>
+    </nav>
+    <div class="top-actions">
+      <a class="btn small" href="https://ferct-oct.github.io/losctstudios-katstudios/">KatLauncher</a>
+      <a class="btn small primary" href="#descargar">Descargar</a>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+
+<section id="inicio" class="hero wrap">
+  <div class="hero-text">
+    <div class="eyebrow mono reveal"><span class="dot"></span>Nuevo · Kat OS 1.0 alpha · Debian 13</div>
+    <h1 class="display reveal">Tu PC,<br>con gato.</h1>
+    <p class="lead reveal">Un sistema operativo bonito, seguro y fácil, en español. Con Kat, tu asistente en forma de
+      canica, apps propias y un escritorio que se adapta a ti: estilo Windows, Mac o Linux.</p>
+    <div class="cta reveal">
+      <a class="btn primary big" href="#descargar">Descargar · próximamente</a>
+      <a class="btn big" href="#kat">Conoce a Kat</a>
+    </div>
+    <ul class="facts mono reveal">
+      <li>Gratis</li>
+      <li>Software libre</li>
+      <li>Sin telemetría</li>
+      <li>Base Debian 13 + KDE Plasma 6</li>
+    </ul>
+  </div>
+
+  <figure class="mock reveal" aria-label="Ilustración del escritorio de Kat OS">
+    <div class="mock-bar"><i></i><i></i><i></i><span>Kat OS</span></div>
+    <div class="mock-desk">
+      <div class="win">
+        <div class="win-bar"><img src="assets/kat-store.png" alt="">Kat Store</div>
+        <div class="win-body">
+          <div class="search">launcher</div>
+          <div class="row on"><b>K</b><div><strong>KatLauncher</strong><small>★ Recomendada · Kat Studios</small></div><span class="pill">Instalar</span></div>
+          <div class="row"><b>P</b><div><strong>Otro launcher</strong><small>Flathub</small></div><span class="pill off">Instalar</span></div>
+          <div class="row"><b>S</b><div><strong>Otro más</strong><small>Flathub</small></div><span class="pill off">Instalar</span></div>
+        </div>
+      </div>
+      <div class="orb-bubble">«Abre la tienda» — Abriendo Kat Store.</div>
+      <img class="orb" id="canica-portada" src="assets/canica-kat.png" alt="Kat, la asistente: una canica con orejas de gato">
+      <div class="taskbar">
+        <span class="start"><img src="assets/logo.png" alt=""></span>
+        <img src="assets/kat-files.png" alt=""><img src="assets/kat-store.png" alt="">
+        <img src="assets/kat-settings.png" alt=""><img src="assets/kat-update.png" alt="">
+        <span class="clock">10:24</span>
+      </div>
+    </div>
+    <figcaption>Ilustración del escritorio de Kat OS (estilo Windows) con Kat Store y Kat</figcaption>
+  </figure>
+</section>
+
+<section id="novedades" class="section wrap">
+  <div class="sec-head reveal">
+    <div class="eyebrow mono">Kat OS 1.0 alpha</div>
+    <h2>Lo que trae la primera versión</h2>
+    <p class="muted">Todo en español, pensado para quien viene de Windows y no quiere complicarse.</p>
+  </div>
+  <div class="grid three">
+    <article class="card reveal"><div class="num mono">01</div><h3>Kat, tu asistente</h3>
+      <p>Una canica con orejas de gato. Le hablas o le escribes, te responde en voz alta y abre tus apps.</p></article>
+    <article class="card reveal"><div class="num mono">02</div><h3>Kat Bienvenida</h3>
+      <p>La primera vez, a pantalla completa y con música: tu perfil, tu estilo, tu fondo y cómo desbloquear.</p></article>
+    <article class="card reveal"><div class="num mono">03</div><h3>Kat Store</h3>
+      <p>Miles de apps y juegos de Flathub, más las apps de Kat Studios, como KatLauncher, con un clic.</p></article>
+    <article class="card reveal"><div class="num mono">04</div><h3>Desbloqueo a tu manera</h3>
+      <p>Contraseña, PIN con candado animado, tu cara (Kat Rostro) o un botón en tu teléfono (Kat Phone ID).</p></article>
+    <article class="card reveal"><div class="num mono">05</div><h3>Instalador Kat OS</h3>
+      <p>Pruébalo desde un USB sin instalar y, si te gusta, instálalo en minutos, con la opción de cifrar el disco.</p></article>
+    <article class="card reveal"><div class="num mono">06</div><h3>Actualizaciones firmadas</h3>
+      <p>Las apps de Kat se actualizan solas, firmadas por el proyecto: lo que no venga de Kat OS se rechaza.</p></article>
+  </div>
+</section>
+
+<section id="kat" class="section wrap media">
+  <div class="kat-box reveal">
+    <img class="grande" id="canica-kat" src="assets/canica-kat.png" alt="Kat en el diseño elegido">
+    <div class="disenos" role="group" aria-label="Diseños de Kat">
+      <button type="button" aria-pressed="true" data-diseno="kat" title="Kat"><img src="assets/canica-kat.png" alt="Kat"></button>
+      <button type="button" aria-pressed="false" data-diseno="galaxia" title="Galaxia"><img src="assets/canica-galaxia.png" alt="Galaxia"></button>
+      <button type="button" aria-pressed="false" data-diseno="fuego" title="Fuego"><img src="assets/canica-fuego.png" alt="Fuego"></button>
+      <button type="button" aria-pressed="false" data-diseno="hielo" title="Hielo"><img src="assets/canica-hielo.png" alt="Hielo"></button>
+      <button type="button" aria-pressed="false" data-diseno="menta" title="Menta"><img src="assets/canica-menta.png" alt="Menta"></button>
+    </div>
+  </div>
+  <div class="media-text reveal">
+    <div class="eyebrow mono">Tu asistente</div>
+    <h2>Conoce a Kat</h2>
+    <p class="muted">Vive en la barra de tareas. Elige su diseño, su voz y su palabra de activación la primera vez.</p>
+    <ul class="puntos">
+      <li><b>Sale de la barra a golpes.</b> La primera vez la barra tiembla con destellos rojos, azules y blancos hasta que aparece.</li>
+      <li><b>Un toque y le hablas.</b> Ves la transcripción de lo que dijiste; sin micrófono, se abre una caja para escribirle.</li>
+      <li><b>Hace cosas de verdad.</b> Abre apps, dice la hora y el clima, hace cuentas, pone temporizadores y cambia el volumen.</li>
+      <li><b>Se mete en las ventanas.</b> Al abrir una app su logo aparece dentro de la canica y Kat se mete en la ventana.</li>
+      <li><b>Kat Cloud AI, si quieres.</b> Preguntas libres con tu propia clave gratuita de Groq; sin ella, Kat sigue funcionando.</li>
+    </ul>
+  </div>
+</section>
+
+<section id="funciones" class="section wrap">
+  <div class="sec-head reveal">
+    <div class="eyebrow mono">Funciones</div>
+    <h2>Apps propias, sin el menú laberinto</h2>
+  </div>
+  <div class="grid four">
+    <article class="feat con-icono reveal"><img class="ico" src="assets/kat-files.png" alt=""><h3>Kat Files</h3>
+      <p>Tus archivos, carpetas y papelera, con borrado seguro para lo que no debe recuperarse.</p></article>
+    <article class="feat con-icono reveal"><img class="ico" src="assets/kat-settings.png" alt=""><h3>Kat Settings</h3>
+      <p>Pantalla, sonido, red, energía, hora, cuenta y seguridad en un solo lugar.</p></article>
+    <article class="feat con-icono reveal"><img class="ico" src="assets/kat-update.png" alt=""><h3>Kat Update Center</h3>
+      <p>Parches de seguridad automáticos y las novedades de Kat OS, con historial.</p></article>
+    <article class="feat con-icono reveal"><img class="ico" src="assets/kat-compat.png" alt=""><h3>Kat Compat</h3>
+      <p>Abre programas de Windows (.exe) con Wine, sin complicarte.</p></article>
+    <article class="feat con-icono reveal"><img class="ico" src="assets/kat-moji.png" alt=""><h3>KatMoji</h3>
+      <p>Casi 2000 emojis buscables por su nombre en español. Windows + punto.</p></article>
+    <article class="feat con-icono reveal"><img class="ico" src="assets/kat-safety.png" alt=""><h3>KatSafety</h3>
+      <p>Avisos de sismos y desastres cercanos (USGS y GDACS) y modos de ahorro.</p></article>
+    <article class="feat con-icono reveal"><img class="ico" src="assets/kat-security.png" alt=""><h3>Kat Security</h3>
+      <p>Cortafuegos activado y actualizaciones de seguridad desde el primer día.</p></article>
+    <article class="feat con-icono reveal"><img class="ico" src="assets/kat-telefono.png" alt=""><h3>Kat Phone ID</h3>
+      <p>Desbloquea el PC con un botón en tu teléfono, solo en tu Wi-Fi.</p></article>
+  </div>
+  <p class="note">Kat Rostro (desbloqueo con la cara) es una comodidad opcional: con una webcam normal, una foto
+    podría engañarlo. Tu PIN y tu contraseña siempre funcionan.</p>
+</section>
+
+<section id="estilos" class="section wrap">
+  <div class="sec-head reveal">
+    <div class="eyebrow mono">Tres estilos</div>
+    <h2>Elige cómo se ve</h2>
+    <p class="muted">Se cambia al instante en Kat Bienvenida o en Kat Settings. Ventanas que salen de su icono con un
+      brillo, cursores Obsidian, modo oscuro o claro y ocho fondos propios.</p>
+  </div>
+  <div class="grid three">
+    <article class="ui reveal">
+      <div class="mini m-win" aria-hidden="true"><i class="w"></i><i class="bar"></i><i class="s a"></i></div>
+      <h3>Windows <span class="tag">Por defecto</span></h3>
+      <p>Barra abajo con el menú a la izquierda. Lo de siempre.</p></article>
+    <article class="ui reveal">
+      <div class="mini m-mac" aria-hidden="true"><i class="menu"></i><i class="w"></i><i class="dock"></i></div>
+      <h3>Mac</h3>
+      <p>Barra de menú arriba y dock abajo.</p></article>
+    <article class="ui reveal">
+      <div class="mini m-lin" aria-hidden="true"><i class="side"></i><i class="s a"></i><i class="i" style="top:24px"></i><i class="i" style="top:38px"></i><i class="i" style="top:52px"></i><i class="w"></i></div>
+      <h3>Linux</h3>
+      <p>Barra lateral a la izquierda, con más espacio para tus ventanas.</p></article>
+  </div>
+</section>
+
+<section id="descargar" class="section wrap">
+  <div class="sec-head reveal">
+    <div class="eyebrow mono">Descargar</div>
+    <h2>Kat OS está en alpha</h2>
+    <p class="muted">Lo estamos probando a fondo antes de publicar la primera descarga.</p>
+  </div>
+  <div class="grid three">
+    <article class="dl main reveal">
+      <div class="eyebrow mono">USB · ISO · 1.0 alpha</div>
+      <h3>Kat OS Desktop</h3>
+      <p>Pruébalo sin instalar desde un USB y, si te gusta, instálalo. Llegará con su huella SHA-256 para que
+        compruebes que bajó bien.</p>
+      <span class="btn primary" aria-disabled="true">Próximamente</span>
+    </article>
+    <article class="dl reveal">
+      <div class="eyebrow mono">Requisitos</div>
+      <h3>Lo que necesita tu PC</h3>
+      <ul class="mono">
+        <li>64 bits (x86-64)</li>
+        <li>2 GB de RAM (4 GB mejor)</li>
+        <li>20 GB de disco</li>
+        <li>USB de 4 GB o más</li>
+      </ul>
+    </article>
+    <article class="dl reveal">
+      <div class="eyebrow mono">Actualizaciones</div>
+      <h3>Repositorio de Kat OS</h3>
+      <p>Las apps de Kat, firmadas. Kat OS ya viene conectado; aquí puedes ver qué se publica.</p>
+      <a class="btn" href="https://github.com/kikerayo/katos-repo">Ver repositorio</a>
+    </article>
+  </div>
+  <p class="note">Kat OS se basa en Debian 13 y KDE Plasma 6, y es software libre.</p>
+</section>
+
+<section id="katlauncher" class="section wrap">
+  <div class="support reveal">
+    <div class="quien">
+      <img src="https://ferct-oct.github.io/losctstudios-katstudios/assets/kat-launcher-logo.png" alt="Logo de KatLauncher">
+      <div>
+        <div class="eyebrow mono">De Kat Studios</div>
+        <h2>KatLauncher</h2>
+        <p class="muted">Tu Minecraft, a tu manera: perfiles, mods, modpacks, skins y amigos. En Kat OS se instala
+          desde Kat Store con un clic.</p>
+      </div>
+    </div>
+    <div class="support-actions">
+      <a class="btn primary" href="https://ferct-oct.github.io/losctstudios-katstudios/">Ver KatLauncher</a>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer class="foot">
+  <div class="wrap foot-row">
+    <a class="brand" href="#inicio"><img src="assets/logo.png" alt="">Kat OS</a>
+    <div class="foot-links">
+      <a href="#novedades">Novedades</a>
+      <a href="#descargar">Descargar</a>
+      <a href="https://github.com/kikerayo/katos-repo">Actualizaciones</a>
+      <a href="https://ferct-oct.github.io/losctstudios-katstudios/">KatLauncher</a>
+    </div>
+    <p class="fine">© 2026 Kat OS Project · Kat Studios. Kat OS es software libre basado en Debian y KDE Plasma; no está
+      afiliado a Debian ni a KDE y sus nombres pertenecen a sus dueños.</p>
+  </div>
+</footer>
+
+<script>
+  // Barra con línea al bajar, como la web de KatLauncher.
+  const top_ = document.getElementById("top");
+  addEventListener("scroll", () => top_.classList.toggle("scrolled", scrollY > 8), { passive: true });
+
+  // Aparecer al bajar (sin animación si el sistema pide menos movimiento).
+  const aparecer = document.querySelectorAll(".reveal");
+  if ("IntersectionObserver" in window && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    const obs = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add("in"); obs.unobserve(e.target); } }),
+                                         { rootMargin: "0px 0px -8% 0px" });
+    aparecer.forEach(e => obs.observe(e));
+  } else {
+    aparecer.forEach(e => e.classList.add("in"));
+  }
+
+  // Elegir el diseño de Kat: cambia las dos canicas.
+  const botones = document.querySelectorAll(".disenos button");
+  const canicas = [document.getElementById("canica-portada"), document.getElementById("canica-kat")];
+  botones.forEach(b => b.addEventListener("click", () => {
+    canicas.forEach(c => c.src = "assets/canica-" + b.dataset.diseno + ".png");
+    botones.forEach(x => x.setAttribute("aria-pressed", String(x === b)));
+  }));
+</script>
+</body>
+</html>
