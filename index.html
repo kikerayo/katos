@@ -161,6 +161,10 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 .dl.main { border-color: color-mix(in srgb, var(--accent) 55%, var(--line)); }
 .dl ul { list-style: none; color: var(--muted); font-size: 14px; display: grid; gap: 4px; }
 .dl ul li::before { content: "/ "; color: var(--line-2); }
+.dl .sha { flex: none; font-size: 12px; color: var(--faint); overflow-wrap: anywhere; }
+.dl .sha span { display: block; color: var(--muted); margin-bottom: 2px; }
+.dl .enlace-ia { font-size: 13px; color: var(--muted); }
+.dl .enlace-ia:hover { color: var(--text); }
 .note { margin-top: 22px; color: var(--faint); font-size: 13px; }
 
 /* KatLauncher */
@@ -237,7 +241,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
     <p class="lead reveal">Un sistema operativo bonito, seguro y fácil, en español. Con Kat, tu asistente en forma de
       canica, apps propias y un escritorio que se adapta a ti: estilo Windows, Mac o Linux.</p>
     <div class="cta reveal">
-      <a class="btn primary big" href="#descargar">Descargar · próximamente</a>
+      <a class="btn primary big" href="#descargar">Descargar gratis</a>
       <a class="btn big" href="#kat">Conoce a Kat</a>
     </div>
     <ul class="facts mono reveal">
@@ -374,15 +378,16 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   <div class="sec-head reveal">
     <div class="eyebrow mono">Descargar</div>
     <h2>Kat OS está en alpha</h2>
-    <p class="muted">Lo estamos probando a fondo antes de publicar la primera descarga.</p>
+    <p class="muted">Es la primera versión de pruebas: ya se instala y se actualiza sola, pero aún puede tener fallos.</p>
   </div>
   <div class="grid three">
     <article class="dl main reveal">
       <div class="eyebrow mono">USB · ISO · 1.0 alpha</div>
       <h3>Kat OS Desktop</h3>
-      <p>Pruébalo sin instalar desde un USB y, si te gusta, instálalo. Llegará con su huella SHA-256 para que
-        compruebes que bajó bien.</p>
-      <span class="btn primary" aria-disabled="true">Próximamente</span>
+      <p>Pruébalo sin instalar desde un USB y, si te gusta, instálalo. ISO de 2.9 GB, alojada en Internet Archive.</p>
+      <p class="sha mono"><span>SHA-256</span>c53cb2ed2fc81e932d24297247df44c53ab784a3d78b4925b39808d52aff4444</p>
+      <a class="btn primary" href="https://archive.org/download/katos-desktop-alpha/katos-desktop-alpha-20261117-2131.iso" download>Descargar ISO · 2.9 GB</a>
+      <a class="enlace-ia" href="https://archive.org/details/katos-desktop-alpha">Ver en Internet Archive</a>
     </article>
     <article class="dl reveal">
       <div class="eyebrow mono">Requisitos</div>
@@ -397,7 +402,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
     <article class="dl reveal">
       <div class="eyebrow mono">Actualizaciones</div>
       <h3>Repositorio de Kat OS</h3>
-      <p>Las apps de Kat, firmadas. Kat OS ya viene conectado; aquí puedes ver qué se publica.</p>
+      <p>Las apps y el sistema de Kat, firmados. Kat OS ya viene conectado y se actualiza solo; aquí puedes ver qué se publica.</p>
       <a class="btn" href="https://github.com/kikerayo/katos-repo">Ver repositorio</a>
     </article>
   </div>
