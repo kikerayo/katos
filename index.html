@@ -165,6 +165,8 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 .dl .sha span { display: block; color: var(--muted); margin-bottom: 2px; }
 .dl .enlace-ia { font-size: 13px; color: var(--muted); }
 .dl .enlace-ia:hover { color: var(--text); }
+.dl .contador { flex: none; font-size: 14px; color: var(--muted); }
+.dl .contador b { color: var(--text); font-size: 18px; font-weight: 650; }
 .note { margin-top: 22px; color: var(--faint); font-size: 13px; }
 
 /* KatLauncher */
@@ -387,6 +389,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
       <p>Pruébalo sin instalar desde un USB y, si te gusta, instálalo. ISO de 2.9 GB, alojada en Internet Archive.</p>
       <p class="sha mono"><span>SHA-256</span>c53cb2ed2fc81e932d24297247df44c53ab784a3d78b4925b39808d52aff4444</p>
       <a class="btn primary" href="https://archive.org/download/katos-desktop-alpha/katos-desktop-alpha-20261117-2131.iso" download>Descargar ISO · 2.9 GB</a>
+      <p class="contador" id="contador" hidden><b class="mono" id="contador-n"></b> <span id="contador-t"></span></p>
       <a class="enlace-ia" href="https://archive.org/details/katos-desktop-alpha">Ver en Internet Archive</a>
     </article>
     <article class="dl reveal">
@@ -443,6 +446,24 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 </footer>
 
 <script>
+  // Contador de descargas: lo cuenta Internet Archive (se actualiza más o menos una vez al día).
+  (async () => {
+    const id = "katos-desktop-alpha";
+    const pedir = (url, sacar) => fetch(url).then(r => r.json()).then(sacar).catch(() => null);
+    const [vistas, descargas] = await Promise.all([
+      pedir("https://be-api.us.archive.org/views/v1/short/" + id, d => d[id].all_time),
+      pedir("https://archive.org/advancedsearch.php?q=identifier:" + id + "&fl[]=downloads&output=json",
+            d => d.response.docs[0].downloads),
+    ]);
+    const nums = [vistas, descargas].filter(n => Number.isFinite(n));
+    if (!nums.length) return;            // sin conexión con Internet Archive: no se muestra nada
+    const n = Math.max(...nums);
+    document.getElementById("contador-n").textContent = n > 0 ? n.toLocaleString("es") : "🐱";
+    document.getElementById("contador-t").textContent =
+      n === 1 ? "descarga" : n > 1 ? "descargas" : "¡Recién publicado! Sé de los primeros en probarlo.";
+    document.getElementById("contador").hidden = false;
+  })();
+
   // Barra con línea al bajar, como la web de KatLauncher.
   const top_ = document.getElementById("top");
   addEventListener("scroll", () => top_.classList.toggle("scrolled", scrollY > 8), { passive: true });
